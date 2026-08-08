@@ -1,0 +1,17 @@
+Arcade audio assets (used by ../arcade.js):
+
+  bgm_arcade_synthwave.mp3   — looped room BGM (volume 0.4)
+  sfx_reel_spin.wav          — looping jackpot reel click
+  sfx_jackpot_fanfare.wav    — $100 jackpot
+  sfx_coin_shower.wav        — after jackpot fanfare
+  sfx_ding_success.wav       — $10 small win
+  sfx_buzz_fail.wav          — loss
+  sfx_jump.wav               — Pixel Quest jump
+  sfx_coin.wav               — Pixel Quest coin
+  sfx_stomp.wav              — Pixel Quest stomp
+  sfx_stage_clear.wav        — Pixel Quest flag
+  sfx_race_start.wav         — Paws Sprint countdown
+  sfx_footstep_fast.wav      — Paws Sprint tap
+  sfx_victory_cheer.wav      — Paws Sprint finish
+
+Synth fallbacks play automatically if a file fails to load.

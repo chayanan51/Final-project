@@ -11,13 +11,14 @@ Each building is a separate file so teammates can edit one place at a time.
 
 ## Edit a building
 
-Open the matching file, e.g. `cafe/cafe.js` (or `arcade.js`), and change:
+Open the matching file, e.g. `cafe/cafe.js` (or `arcade/arcade.js`), and change:
 
 - `info` — room colors, label, activity blurb
 - `drawIcon(ctx, api, cx, cy)` — how it looks on the town map
 - `drawInterior(ctx, api, t, cx, cy)` — inside the building (optional)
 
 Café extras (shop food sprites + cook-order icons) live under [`cafe/`](cafe/).
+Arcade extras (BGM + minigame SFX) live under [`arcade/`](arcade/).
 
 `api` gives you shared helpers from the game (`roundRect`, `drawBuildingPatron`, `HOUSE`, …).
 

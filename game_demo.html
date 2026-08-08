@@ -978,6 +978,7 @@
       <div class="bar-track"><div class="bar-fill fill-bond" id="hud-bond-bar" style="width:0%"></div></div>
     </div>
     <div class="spacer"></div>
+    <button class="hud-btn" id="btn-sound" type="button" title="Unlock browser audio">Enable Sound</button>
     <button class="hud-btn" id="btn-map">Edit Map</button>
     <button class="hud-btn" id="btn-save">Save</button>
     <button class="hud-btn" id="btn-load">Load</button>
@@ -1059,7 +1060,7 @@
 <script src="js/buildings/school.js"></script>
 <script src="js/buildings/cinema.js"></script>
 <script src="js/buildings/shelter.js"></script>
-<script src="js/buildings/arcade.js"></script>
+<script src="js/buildings/arcade/arcade.js"></script>
 <script src="js/buildings/stadium.js"></script>
 <script src="js/buildings/concert.js"></script>
 <script src="js/buildings/farm.js"></script>
@@ -3048,56 +3049,80 @@ const BREEDS = {
       try { actx = new (window.AudioContext || window.webkitAudioContext)(); }
       catch(e){ actx = null; }
     }
-    if(actx && actx.state === "suspended") actx.resume();
+    if(actx && actx.state === "suspended"){
+      try { actx.resume(); } catch(e){ /* ignore */ }
+    }
     return actx;
   }
-  window.addEventListener("keydown", ensureAudio, { once:true });
-  window.addEventListener("pointerdown", ensureAudio, { once:true });
+  // Expose for building modules (arcade Enable Sound button, etc.)
+  window.PawsEnsureAudio = ensureAudio;
+  // Keep trying until the context is running (external browsers often block the first attempt)
+  function unlockGameAudio(){
+    const ac = ensureAudio();
+    if(ac && ac.state === "suspended"){
+      ac.resume().catch(() => {});
+    }
+  }
+  ["keydown","pointerdown","mousedown","touchstart","click"].forEach((ev) => {
+    window.addEventListener(ev, unlockGameAudio, true);
+  });
 
-  function beep(freq, dur, type, vol, delay){
+  function withRunningAudio(fn){
     const ac = ensureAudio();
     if(!ac) return;
-    const t0 = ac.currentTime + (delay||0);
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = type || "sine";
-    osc.frequency.setValueAtTime(freq, t0);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(vol!=null?vol:0.15, t0+0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.start(t0); osc.stop(t0+dur+0.02);
+    const run = () => { if(ac.state === "running") fn(ac); };
+    if(ac.state === "running") run();
+    else {
+      const p = ac.resume();
+      if(p && typeof p.then === "function") p.then(run).catch(()=>{});
+      else run();
+    }
+  }
+
+  function beep(freq, dur, type, vol, delay){
+    withRunningAudio((ac) => {
+      const t0 = ac.currentTime + (delay||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = type || "sine";
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(vol!=null?vol:0.2, t0+0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+Math.max(dur, 0.03));
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    });
   }
 
   function sweep(f0, f1, dur, type, vol, delay){
-    const ac = ensureAudio();
-    if(!ac) return;
-    const t0 = ac.currentTime + (delay||0);
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = type || "sine";
-    osc.frequency.setValueAtTime(f0, t0);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(1,f1), t0+dur);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(vol!=null?vol:0.15, t0+0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.start(t0); osc.stop(t0+dur+0.02);
+    withRunningAudio((ac) => {
+      const t0 = ac.currentTime + (delay||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = type || "sine";
+      osc.frequency.setValueAtTime(f0, t0);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(1,f1), t0+dur);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(vol!=null?vol:0.2, t0+0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+Math.max(dur, 0.03));
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    });
   }
 
   function noiseBurst(dur, vol){
-    const ac = ensureAudio();
-    if(!ac) return;
-    const bufferSize = Math.max(1, Math.floor(ac.sampleRate * dur));
-    const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
-    const data = buffer.getChannelData(0);
-    for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
-    const src = ac.createBufferSource();
-    src.buffer = buffer;
-    const gain = ac.createGain();
-    gain.gain.value = vol!=null?vol:0.12;
-    src.connect(gain); gain.connect(ac.destination);
-    src.start();
+    withRunningAudio((ac) => {
+      const bufferSize = Math.max(1, Math.floor(ac.sampleRate * dur));
+      const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+      const data = buffer.getChannelData(0);
+      for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+      const src = ac.createBufferSource();
+      src.buffer = buffer;
+      const gain = ac.createGain();
+      gain.gain.value = vol!=null?vol:0.14;
+      src.connect(gain); gain.connect(ac.destination);
+      src.start();
+    });
   }
 
   const SFX = {
@@ -3153,7 +3178,11 @@ const BREEDS = {
       beep(330,0.08,"square",0.015,1.8);
       beep(440,0.08,"square",0.015,2.0);
     } else if(id === "arcade"){
-      // Cheerful chiptune loop
+      // Arcade module owns location BGM (PawsArcadeAudio) — skip host chiptune when active
+      if(window.PawsArcadeAudio && typeof window.PawsArcadeAudio.isBgmPlaying === "function" && window.PawsArcadeAudio.isBgmPlaying()){
+        return;
+      }
+      // Cheerful chiptune loop (fallback if arcade audio manager idle)
       [523.25,659.25,783.99,659.25,880,783.99].forEach((f,i) => {
         beep(f,0.13,"square",0.012,i*0.22);
       });
@@ -3199,6 +3228,45 @@ const BREEDS = {
     }
     stopConcertMusic();
   }
+
+  // Town / building ambience hooks for arcade location BGM transitions
+  let pausedAmbienceId = "";
+  window.PawsAudio = {
+    pauseTownBgm(){
+      if(activeAmbience){
+        pausedAmbienceId = activeAmbience;
+        if(ambienceTimer){
+          clearInterval(ambienceTimer);
+          ambienceTimer = null;
+        }
+        // Keep activeAmbience so host skip-checks still know we're "in" the building
+      }
+    },
+    resumeTownBgm(){
+      const id = pausedAmbienceId || activeAmbience;
+      pausedAmbienceId = "";
+      if(!id) return;
+      // Don't fight arcade BGM if it's still playing
+      if(window.PawsArcadeAudio && typeof window.PawsArcadeAudio.isBgmPlaying === "function" && window.PawsArcadeAudio.isBgmPlaying()){
+        return;
+      }
+      if(id === "arcade"){
+        // Leaving arcade: host will restart ambience on next enter; no chiptune resume needed
+        return;
+      }
+      if(!ambienceTimer && activeAmbience === id){
+        playAmbienceBar(id);
+        const intervals = {
+          home: 4200, cafe: 3400, store: 3000, boutique: 3200, lake: 4800,
+          shelter: 3800, stadium: 2800, arcade: 1800, school: 4600,
+          guestLavender: 4200, guestBlue: 4200,
+        };
+        if(intervals[id]) ambienceTimer = setInterval(() => playAmbienceBar(id), intervals[id]);
+      } else if(!activeAmbience){
+        startBuildingAmbience(id);
+      }
+    },
+  };
 
   /* ---------- HUD ---------- */
   function updateHud(){
@@ -12118,6 +12186,32 @@ const BREEDS = {
     if(home){ player.x = home.x + home.w/2; player.y = home.y + home.h + 30; }
     updateHud();
     beginNewPlayerFlow();
+  }
+
+  /* ---------- Sound unlock (external browsers block AudioContext until a click) ---------- */
+  const btnSound = document.getElementById("btn-sound");
+  if(btnSound){
+    btnSound.addEventListener("click", () => {
+      unlockGameAudio();
+      withRunningAudio((ac) => {
+        // Audible click test
+        const t0 = ac.currentTime;
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(660, t0);
+        gain.gain.setValueAtTime(0.22, t0);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.start(t0); osc.stop(t0 + 0.2);
+        btnSound.textContent = "Sound On";
+        toast("Sound enabled");
+      });
+      // Also arm arcade HTMLAudio path if present
+      if(window.PawsArcadeAudio && typeof window.PawsArcadeAudio.unlock === "function"){
+        window.PawsArcadeAudio.unlock(true);
+      }
+    });
   }
 
   /* ---------- Save controls ---------- */

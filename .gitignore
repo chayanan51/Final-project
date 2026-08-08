@@ -30,6 +30,10 @@ renders/
 *.wav
 *.webm
 
+# Keep playable arcade BGM/SFX in the building module
+!js/buildings/arcade/audio/
+!js/buildings/arcade/audio/**
+
 # Source art for the playable demo (not used by the reel pipeline; kept local only)
 breed-cartoons/
 
