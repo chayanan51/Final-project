@@ -11,7 +11,7 @@
   /* ---------- Global asset / sprite map (Ghostpixxells Pixel Food) ---------- */
   const globalAssets = (window.globalAssets = window.globalAssets || {});
   const globalConstants = (window.globalConstants = window.globalConstants || {});
-  const FOOD_DIR = "assets/Ghostpixxells_pixelfood/";
+  const FOOD_DIR = "js/buildings/cafe/food/";
 
   // Menu item → Ghostpixxells filename (32×32 PNGs from presentation pack)
   const FOOD_FILES = {

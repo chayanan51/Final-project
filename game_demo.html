@@ -1074,7 +1074,8 @@
 <script src="js/buildings/guest-lavender.js"></script>
 <script src="js/buildings/guest-blue.js"></script>
 <script src="js/buildings/store.js"></script>
-<script src="js/buildings/cafe.js"></script>
+<script src="js/buildings/cafe/cafe.js"></script>
+<script src="js/buildings/cafe/cook.js"></script>
 <script src="js/buildings/boutique.js"></script>
 <script src="js/buildings/school.js"></script>
 <script src="js/buildings/cinema.js"></script>
@@ -9407,19 +9408,17 @@ const BREEDS = {
     return FISH_SPECIES[0];
   }
   /* ---------- Café: cooking job ---------- */
-  const COOK_FOOD_DIR = "assets/Ghostpixxells_pixelfood/";
-  const COOK_STATIONS = [
-    { id:"bread", name:"Bread",  color:"#D9A066", sprite:"07_bread.png" },
-    { id:"veg",   name:"Veggie", color:"#6B8E6B", sprite:"40_eggsalad.png" },
-    { id:"grill", name:"Grill",  color:"#B5654A", sprite:"95_steak.png" },
-    { id:"plate", name:"Plate",  color:"#CFE7F2", sprite:"01_dish.png" },
+  // Station icons + food sprites live in js/buildings/cafe/ (cook.js + food/)
+  const COOK_STATIONS = (window.PawsCafeCook && window.PawsCafeCook.stations) || [
+    { id:"bread", name:"Bread",  color:"#D9A066" },
+    { id:"veg",   name:"Veggie", color:"#6B8E6B" },
+    { id:"grill", name:"Grill",  color:"#B5654A" },
+    { id:"plate", name:"Plate",  color:"#CFE7F2" },
   ];
   function stationIconSvg(id, color){
-    const st = COOK_STATIONS.find(s => s.id === id);
-    if(st && st.sprite){
-      return `<img class="station-food" src="${COOK_FOOD_DIR}${st.sprite}" alt="${st.name}" width="36" height="36" draggable="false">`;
+    if(window.PawsCafeCook && typeof window.PawsCafeCook.stationIcon === "function"){
+      return window.PawsCafeCook.stationIcon(id, color);
     }
-    // Fallback shapes if a sprite is missing
     switch(id){
       case "veg": return `<svg viewBox="0 0 24 24" width="26" height="26"><circle cx="8" cy="9" r="5" fill="${color}"/><circle cx="15" cy="7" r="4" fill="${color}"/><circle cx="16" cy="13" r="5" fill="${color}"/></svg>`;
       case "grill": return `<svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2c2 3-1 4-1 6a3 3 0 0 0 6 0c0-1-1-2-1-3 2 2 3 5 3 7a6 6 0 0 1-12 0c0-4 3-6 5-10Z" fill="${color}"/></svg>`;
