@@ -40,6 +40,13 @@
       }
       return false;
     },
+    getSolids(id, HOUSE) {
+      const m = this.get(id);
+      if (m && typeof m.getSolids === "function") {
+        return m.getSolids(HOUSE) || [];
+      }
+      return null;
+    },
   };
   global.PawsBuildings = PawsBuildings;
 })(typeof window !== "undefined" ? window : globalThis);

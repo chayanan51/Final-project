@@ -271,9 +271,9 @@
     };
   }
 
-  function cafeSolids(HOUSE) {
+  function cafeFurnitureSolids(HOUSE) {
+    // Café-only collision (tables + shelves). Shared counter stays in game_demo.
     return [
-      { x: HOUSE.x + HOUSE.w / 2 - 95, y: HOUSE.y + 115, w: 190, h: 55 },
       { x: HOUSE.x + 55, y: HOUSE.y + 280, w: 70, h: 55 },
       { x: HOUSE.x + 160, y: HOUSE.y + 280, w: 70, h: 55 },
       { x: HOUSE.x + 590, y: HOUSE.y + 280, w: 70, h: 55 },
@@ -281,6 +281,12 @@
       { x: HOUSE.x + 50, y: HOUSE.y + 95, w: 60, h: 80 },
       { x: HOUSE.x + HOUSE.w - 110, y: HOUSE.y + 95, w: 60, h: 80 },
     ];
+  }
+
+  function cafeSolids(HOUSE) {
+    return [
+      { x: HOUSE.x + HOUSE.w / 2 - 95, y: HOUSE.y + 115, w: 190, h: 55 },
+    ].concat(cafeFurnitureSolids(HOUSE));
   }
 
   function solidAt(HOUSE, px, py, pr) {
@@ -1040,6 +1046,9 @@
   B.register({
     id: "cafe",
     info: { label: "Willow Café", wall: "#D4B896", floor: "#E8D4B0", accent: "#C4785A", activity: "Cook orders", blurb: "Espresso steam and pastry trays." },
+    getSolids(HOUSE) {
+      return cafeFurnitureSolids(HOUSE);
+    },
     drawIcon(ctx, api, cx, cy) {
       const S = B.shared; S.bind(api);
       const roundRect = api.roundRect;

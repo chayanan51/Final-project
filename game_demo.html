@@ -7739,16 +7739,15 @@ const BREEDS = {
       { x: HOUSE.x + HOUSE.w/2 - 95, y: HOUSE.y + 115, w: 190, h: 55 }, // counter
     ];
     const id = currentBuilding;
-    if(id === "cafe"){
-      solids.push(
-        { x: HOUSE.x + 55, y: HOUSE.y + 280, w: 70, h: 55 },
-        { x: HOUSE.x + 160, y: HOUSE.y + 280, w: 70, h: 55 },
-        { x: HOUSE.x + 590, y: HOUSE.y + 280, w: 70, h: 55 },
-        { x: HOUSE.x + 695, y: HOUSE.y + 280, w: 70, h: 55 },
-        { x: HOUSE.x + 50, y: HOUSE.y + 95, w: 60, h: 80 },
-        { x: HOUSE.x + HOUSE.w - 110, y: HOUSE.y + 95, w: 60, h: 80 }
-      );
-    } else if(id === "store"){
+    // Prefer per-building solids from js/buildings modules (e.g. cafe/)
+    if(window.PawsBuildings){
+      const modSolids = window.PawsBuildings.getSolids(id, HOUSE);
+      if(modSolids){
+        solids.push(...modSolids);
+        return solids;
+      }
+    }
+    if(id === "store"){
       solids.push(
         { x: HOUSE.x + 48, y: HOUSE.y + 95, w: 80, h: 120 },
         { x: HOUSE.x + HOUSE.w - 128, y: HOUSE.y + 95, w: 80, h: 120 },
