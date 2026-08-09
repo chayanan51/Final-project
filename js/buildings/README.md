@@ -19,6 +19,7 @@ Open the matching file, e.g. `cafe/cafe.js` (or `arcade/arcade.js`), and change:
 
 Café extras (shop food sprites + cook-order icons) live under [`cafe/`](cafe/).
 Arcade extras (BGM + minigame SFX) live under [`arcade/`](arcade/).
+Stadium extras (Free Racer GP + lounge) live under [`stadium/`](stadium/).
 
 `api` gives you shared helpers from the game (`roundRect`, `drawBuildingPatron`, `HOUSE`, …).
 

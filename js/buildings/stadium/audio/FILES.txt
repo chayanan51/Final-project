@@ -1,0 +1,10 @@
+Stadium audio (optional — used by ../stadium.js; synth fallback if missing):
+
+  bgm_stadium_hub.wav     — pit lounge hub BGM
+  bgm_f1_race_fast.wav    — race loop BGM
+  sfx_engine_rev.wav      — race start rev
+  sfx_countdown.wav       — 3-2-1 countdown
+  sfx_drs_boost.wav       — DRS swoosh
+  sfx_race_finish.wav     — checkered finish fanfare
+
+MP3 names are also tried first; WAV fallbacks ship here.

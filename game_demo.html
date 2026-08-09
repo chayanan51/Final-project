@@ -1061,7 +1061,7 @@
 <script src="js/buildings/cinema.js"></script>
 <script src="js/buildings/shelter.js"></script>
 <script src="js/buildings/arcade/arcade.js"></script>
-<script src="js/buildings/stadium.js"></script>
+<script src="js/buildings/stadium/stadium.js?v=freeracer9"></script>
 <script src="js/buildings/concert.js"></script>
 <script src="js/buildings/farm.js"></script>
 <script src="js/buildings/lake.js"></script>
@@ -3172,7 +3172,11 @@ const BREEDS = {
       [392,493.88,523.25,493.88].forEach((f,i) => beep(f,0.55,"sine",0.016,i*0.7));
       beep(196,0.8,"triangle",0.009,0);
     } else if(id === "stadium"){
-      // Low engine pulse and starting-light beeps
+      // Stadium module owns location BGM (PawsStadiumAudio) — skip host pulse when active
+      if(window.PawsStadiumAudio && typeof window.PawsStadiumAudio.isBgmPlaying === "function" && window.PawsStadiumAudio.isBgmPlaying()){
+        return;
+      }
+      // Low engine pulse and starting-light beeps (fallback)
       sweep(95,125,0.7,"sawtooth",0.012,0);
       sweep(105,145,0.55,"sawtooth",0.01,1.0);
       beep(330,0.08,"square",0.015,1.8);
@@ -3246,12 +3250,18 @@ const BREEDS = {
       const id = pausedAmbienceId || activeAmbience;
       pausedAmbienceId = "";
       if(!id) return;
-      // Don't fight arcade BGM if it's still playing
+      // Don't fight building-module BGM if it's still playing
       if(window.PawsArcadeAudio && typeof window.PawsArcadeAudio.isBgmPlaying === "function" && window.PawsArcadeAudio.isBgmPlaying()){
+        return;
+      }
+      if(window.PawsStadiumAudio && typeof window.PawsStadiumAudio.isBgmPlaying === "function" && window.PawsStadiumAudio.isBgmPlaying()){
         return;
       }
       if(id === "arcade"){
         // Leaving arcade: host will restart ambience on next enter; no chiptune resume needed
+        return;
+      }
+      if(id === "stadium"){
         return;
       }
       if(!ambienceTimer && activeAmbience === id){
@@ -12207,9 +12217,12 @@ const BREEDS = {
         btnSound.textContent = "Sound On";
         toast("Sound enabled");
       });
-      // Also arm arcade HTMLAudio path if present
+      // Also arm arcade / stadium HTMLAudio + WebAudio paths if present
       if(window.PawsArcadeAudio && typeof window.PawsArcadeAudio.unlock === "function"){
         window.PawsArcadeAudio.unlock(true);
+      }
+      if(window.PawsStadiumAudio && typeof window.PawsStadiumAudio.unlock === "function"){
+        window.PawsStadiumAudio.unlock();
       }
     });
   }

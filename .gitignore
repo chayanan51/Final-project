@@ -30,9 +30,11 @@ renders/
 *.wav
 *.webm
 
-# Keep playable arcade BGM/SFX in the building module
+# Keep playable building-module BGM/SFX
 !js/buildings/arcade/audio/
 !js/buildings/arcade/audio/**
+!js/buildings/stadium/audio/
+!js/buildings/stadium/audio/**
 
 # Source art for the playable demo (not used by the reel pipeline; kept local only)
 breed-cartoons/
@@ -57,3 +59,5 @@ assets/mii/debug/
 assets/mii/preview/
 assets/mii/character_sheet.jpg
 assets/mii/character_sheet_gray.png
+# Full Free Racer source (~280MB); race uses js/buildings/stadium/runtime/ only
+assets/Free_Racer_Asset_Pack/
